@@ -32,7 +32,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Load environment variables
-BASE_DIR = Path(r"D:\capstone project 2")
+# BASE_DIR = Path(r"D:\capstone project 2")
+BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # ======================================================

@@ -11,7 +11,9 @@ from pathlib import Path
 # ======================================================
 # CONFIGURATION & ENV LOADING
 # ======================================================
-BASE_DIR = Path(r"D:\capstone project 2")
+# BASE_DIR = Path(r"D:\capstone project 2")
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # Local File Paths

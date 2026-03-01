@@ -10,7 +10,9 @@ from dotenv import load_dotenv
 # ======================================================
 # 1. LOAD CONFIGURATION (FIXED PATH)
 # ======================================================
-BASE_PROJECT_PATH = r"D:\capstone project 2"
+# BASE_PROJECT_PATH = r"D:\capstone project 2"
+from pathlib import Path
+BASE_PROJECT_PATH = Path(__file__).resolve().parent
 env_path = os.path.join(BASE_PROJECT_PATH, ".env")
 load_dotenv(dotenv_path=env_path)
 

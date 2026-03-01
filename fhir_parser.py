@@ -5,12 +5,17 @@ from datetime import datetime
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import freeze_support
+from pathlib import Path
+
 
 # ======================================================
 # CONFIGURATION
 # ======================================================
-INPUT_DIR = r"D:\capstone project 2\fhir"  
-OUTPUT_DIR = r"D:\capstone project 2\parsed_data"
+# INPUT_DIR = r"D:\capstone project 2\fhir"  
+BASE_DIR = Path(__file__).resolve().parent
+INPUT_DIR = BASE_DIR / "fhir"
+# OUTPUT_DIR = r"D:\capstone project 2\parsed_data"
+OUTPUT_DIR = BASE_DIR / "parsed_data"
 MAX_WORKERS = min(4, os.cpu_count())
 
 TOTAL_RECORDS_LIMIT = 20000
