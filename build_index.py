@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 # CONFIGURATION & ENV LOADING
 # ======================================================
 # Load .env from the root project directory
-BASE_DIR = Path(r"D:\capstone project 2")
+# BASE_DIR = Path(r"D:\capstone project 2")
+BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # MongoDB Settings
