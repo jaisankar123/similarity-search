@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # =====================================================
 # LOAD ENV AND CONFIG
 # =====================================================
-load_dotenv() #cite: 2.1, 2.4
+load_dotenv()  # cite: 2.1, 2.4
 
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
@@ -25,7 +25,7 @@ MODEL_BATCH_SIZE = int(os.getenv("BATCH_SIZE", 16))
 # =====================================================
 print("\nConnecting to MongoDB and loading BioClinicalBERT...")
 
-client = MongoClient(MONGO_URI) #cite: 1.4
+client = MongoClient(MONGO_URI)  # cite: 1.4
 db = client[DB_NAME]
 narratives_col = db[NARRATIVE_COLL]
 embeddings_col = db[EMBEDDINGS_COLL]
@@ -42,57 +42,46 @@ if device.type == "cuda":
 # =====================================================
 # UPDATE to embeddings.py
 
+
 def generate_embeddings(texts):
     inputs = tokenizer(
-        texts,
-        padding=True,
-        truncation=True,
-        max_length=MAX_LENGTH,
-        return_tensors="pt"
+        texts, padding=True, truncation=True, max_length=MAX_LENGTH, return_tensors="pt"
     )
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
     with torch.no_grad():
         outputs = model(**inputs)
-        
+
         # MEAN POOLING with DOMAIN WEIGHTING
-        token_embeddings = outputs.last_hidden_state # [batch, seq, 768]
-        attention_mask = inputs["attention_mask"] # [batch, seq]
-        
+        token_embeddings = outputs.last_hidden_state  # [batch, seq, 768]
+        attention_mask = inputs["attention_mask"]  # [batch, seq]
+
         # 1. Identify Domain-Critical Tokens
         # We increase weights for medical keywords found in the input IDs
         # (Example: tokens related to 'diabetes', 'hypertension', etc.)
         weights = torch.ones_like(attention_mask).float()
-        
-        # Simple NER/Weighting: Boost weights for non-stopword tokens
-        # In a full implementation, use a list of medical vocab IDs here
-        input_ids = inputs["input_ids"]
-        for i in range(input_ids.shape[0]):
-            for j in range(input_ids.shape[1]):
-                token_id = input_ids[i, j].item()
-                # If token is in medical dictionary, weight it 2.0x
-                # if token_id in medical_token_ids: weights[i, j] = 2.0
-        
+
         # 2. Apply Weighting to Pooling
         expanded_weights = (weights * attention_mask).unsqueeze(-1)
         weighted_embeddings = token_embeddings * expanded_weights
-        
+
         summed = weighted_embeddings.sum(dim=1)
         counts = expanded_weights.sum(dim=1)
         mean_pooled = summed / counts.clamp(min=1e-9)
 
     return mean_pooled.cpu().numpy()
 
+
 # =====================================================
 # MAIN
 # =====================================================
 def main():
     print(f"🚀 Processing narratives from MongoDB collection: {NARRATIVE_COLL}")
-    
+
     # Retrieve all narratives from MongoDB cite: 1.1, 1.2
     cursor = narratives_col.find({}, {"p_id": 1, "clinical_narrative": 1})
     total_docs = narratives_col.count_documents({})
-    
+
     model_texts = []
     model_ids = []
     final_records = []
@@ -113,12 +102,14 @@ def main():
             vectors = generate_embeddings(model_texts)
 
             for i in range(len(vectors)):
-                final_records.append({
-                    "p_id": model_ids[i],
-                    "embedding": vectors[i].tolist(),
-                    "embedding_model": MODEL_NAME,
-                    "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-                })
+                final_records.append(
+                    {
+                        "p_id": model_ids[i],
+                        "embedding": vectors[i].tolist(),
+                        "embedding_model": MODEL_NAME,
+                        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                )
 
             # Bulk insert to MongoDB to optimize performance cite: 4.1, 4.5
             if len(final_records) >= 500:
@@ -132,18 +123,23 @@ def main():
     if model_texts:
         vectors = generate_embeddings(model_texts)
         for i in range(len(vectors)):
-            final_records.append({
-                "p_id": model_ids[i],
-                "embedding": vectors[i].tolist(),
-                "embedding_model": MODEL_NAME,
-                "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-            })
+            final_records.append(
+                {
+                    "p_id": model_ids[i],
+                    "embedding": vectors[i].tolist(),
+                    "embedding_model": MODEL_NAME,
+                    "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+            )
 
     if final_records:
         embeddings_col.insert_many(final_records)
 
     elapsed = time.time() - start_time
-    print(f"\n🎉 Completed! Embeddings stored in '{EMBEDDINGS_COLL}' in {round(elapsed, 2)} seconds.")
+    print(
+        f"\n🎉 Completed! Embeddings stored in '{EMBEDDINGS_COLL}' in {round(elapsed, 2)} seconds."
+    )
+
 
 if __name__ == "__main__":
     main()
