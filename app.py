@@ -13,63 +13,225 @@ from streamlit_lottie import st_lottie
 # ======================================================
 # 1. CONFIGURATION & STYLING
 # ======================================================
-st.set_page_config(page_title="FHIR Patient Similarity", layout="wide")
-
 st.markdown("""
-    <style>
-    .main { background-color: #f8f9fa; }
-    
-    /* Search Bar Layout */
-    .stButton>button { 
-        margin-top: 28px; 
-        background-color: #6c63ff; 
-        color: white;
-        height: 3em;
-        width: 100%;
-        border-radius: 8px;
-    }
-    
-    /* Loading Area Background */
-    .loading-container {
-        background-color: #1a1a1a; /* Dark background for the ECG animation */
-        border-radius: 15px;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        color: white;
-        margin-bottom: 20px;
-    }
+<style>
 
-    /* Patient Detail Card: White background, Black text */
-    .patient-card { 
-        background-color: white !important; 
-        color: black !important;
-        padding: 20px; 
-        border-radius: 12px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        margin-bottom: 20px;
-        border: 1px solid #ddd;
-    }
-    .patient-card strong, .patient-card p {
-        color: black !important;
-    }
+/* ============================================================
+   APP BACKGROUND
+============================================================ */
 
-    /* Table styling with visible borders */
-    .styled-table-container {
-        background-color: white;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-    }
-    .styled-table-container table { color: black !important; }
-    .styled-table-container td, .styled-table-container th {
-        border: 1px solid #ddd !important;
-        color: black !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+.stApp {
+    background: linear-gradient(
+        180deg,
+        #FFD8A8 0%,
+        #FFE8CC 40%,
+        #FFF4E6 75%,
+        #FFFFFF 100%
+    );
+}
+
+.main{
+    background: transparent;
+}
+
+/* ============================================================
+   TOP HEADER
+============================================================ */
+
+header[data-testid="stHeader"]{
+    background: linear-gradient(
+        90deg,
+        #FFB366,
+        #FFE8CC
+    ) !important;
+}
+
+[data-testid="stToolbar"]{
+    background: transparent !important;
+}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+
+[data-testid="stSidebar"]{
+    background: linear-gradient(
+        180deg,
+        #FFE8CC,
+        #FFF7F0
+    );
+}
+
+button[kind="header"] svg{
+    fill:#000000 !important;
+    color:#000000 !important;
+}
+
+/* ============================================================
+   TEXT
+============================================================ */
+
+h1, h2, h3, h4, h5, h6,
+label,
+p,
+span,
+div{
+    color:#222222 !important;
+}
+
+/* ============================================================
+   TEXT INPUT
+============================================================ */
+
+.stTextInput input{
+    background-color:white !important;
+    color:black !important;
+    border:1px solid #cccccc !important;
+    border-radius:8px;
+}
+
+.stTextInput input::placeholder{
+    color:#666666 !important;
+}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.stButton > button{
+    background:#FF8C42 !important;
+    color:white !important;
+    border:none;
+    border-radius:8px;
+}
+
+.stButton > button:hover{
+    background:#F97316 !important;
+}
+
+.stDownloadButton > button{
+    background:white !important;
+    color:black !important;
+    border:1px solid #cccccc !important;
+    border-radius:8px;
+}
+
+.stDownloadButton > button:hover{
+    background:#FFE8CC !important;
+}
+
+
+/* ============================================================
+   PATIENT CARD
+============================================================ */
+
+.patient-card{
+    background:white !important;
+    color:black !important;
+    border-radius:12px;
+    padding:20px;
+    border:1px solid #dddddd;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+.patient-card strong,
+.patient-card p{
+    color:black !important;
+}
+
+/* ============================================================
+   TABLE (UPDATED WITH EXPLICIT WIDTH FIXES)
+============================================================ */
+
+div[data-testid="stTable"] {
+    background: white !important;
+    border-radius: 10px;
+    width: 100% !important;
+    overflow-x: auto !important;
+}
+
+div[data-testid="stTable"] table {
+    background: white !important;
+    color: black !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    table-layout: fixed !important; /* Forces strict adherence to cell widths */
+}
+
+div[data-testid="stTable"] th {
+    background: #FFE8CC !important;
+    color: black !important;
+    border: 1px solid #dddddd !important;
+    padding: 10px !important;
+}
+
+div[data-testid="stTable"] td {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #dddddd !important;
+    padding: 10px !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+}
+
+/* Precise column-by-column widths */
+/* Index column */
+div[data-testid="stTable"] th:nth-child(1), 
+div[data-testid="stTable"] td:nth-child(1) {
+    width: 50px !important;
+}
+
+/* Patient ID Column */
+div[data-testid="stTable"] th:nth-child(2), 
+div[data-testid="stTable"] td:nth-child(2) {
+    width: 80px !important;
+}
+
+/* Similarity Score Column */
+div[data-testid="stTable"] th:nth-child(3), 
+div[data-testid="stTable"] td:nth-child(3) {
+    width: 90px !important;
+}
+
+/* Clinical Narrative Column (gets the remaining wide width) */
+div[data-testid="stTable"] th:nth-child(4), 
+div[data-testid="stTable"] td:nth-child(4) {
+    width: auto !important;
+}
+
+
+/* ============================================================
+   DATAFRAME
+============================================================ */
+
+[data-testid="stDataFrame"]{
+    background:white !important;
+    color:black !important;
+}
+
+[data-testid="stDataFrame"] table{
+    color:black !important;
+}
+
+/* ============================================================
+   ALERTS
+============================================================ */
+
+.stAlert{
+    background:white !important;
+    color:black !important;
+}
+
+/* ============================================================
+   REMOVE BLACK BACKGROUND
+============================================================ */
+
+.block-container{
+    background:transparent !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # Load environment variables
 BASE_DIR = Path(__file__).resolve().parent
@@ -77,13 +239,13 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # ======================================================
 # 2. DATA & ASSET LOADERS
-# ======================================================
-def load_lottie_file(filepath: str):
-    try:
-        with open(filepath, "r") as f:
-            return json.load(f)
-    except:
-        return None
+# # ======================================================
+# def load_lottie_file(filepath: str):
+#     try:
+#         with open(filepath, "r") as f:
+#             return json.load(f)
+#     except:
+#         return None
 
 @st.cache_resource
 def init_resources():
@@ -97,9 +259,8 @@ def init_resources():
     return index, mapping, collection
 
 # Asset Initialization
-dna_helix = load_lottie_file("search.json")
-success_anim = load_lottie_file("success.json")
-heartbeat_loader = load_lottie_file("search.json")
+success_image = "Sucesso.svg"
+search_svg = "search.svg"
 
 index, mapping, collection = init_resources()
 idx_to_p_id = {int(k): v["p_id"] for k, v in mapping.items()}
@@ -139,8 +300,8 @@ def get_patient_similarity(query_id, k=6):
 # 4. UI LAYOUT
 # ======================================================
 with st.sidebar:
-    if dna_helix:
-        st_lottie(dna_helix, speed=1, height=200)
+    st.image(search_svg, width=220)
+    
     st.title("Settings")
     top_k = st.slider("Number of neighbors", 1, 10, 5)
 
@@ -148,7 +309,7 @@ st.title("🧬 FHIR Patient Similarity Finder")
 st.write("Search clinically similar patients using Bio-ClinicalBERT embeddings.")
 
 # Search bar logic (Half screen width)
-col_search_1, col_search_2, col_spacer = st.columns([2, 1, 3]) 
+col_search_1, col_search_2, col_spacer = st.columns([2, 1, 2]) 
 
 with col_search_1:
     query_id_input = st.text_input("Enter Patient ID (e.g., 101):", "")
@@ -165,9 +326,11 @@ if search_clicked:
             # 1. Loading Animation (ECG Heartbeat)
             placeholder = st.empty()
             with placeholder.container():
-                st.markdown('<div class="loading-container">', unsafe_allow_html=True)
-                if heartbeat_loader:
-                    st_lottie(heartbeat_loader, speed=1, height=300, key="loader")
+                # st.markdown('<div class="loading-container">', unsafe_allow_html=True)
+                col1, col2, col3 = st.columns([1, 2, 1])
+
+                with col2:
+                    st.image(search_svg, width=180)
                 st.markdown('<h3>Analyzing Clinical Patterns...</h3></div>', unsafe_allow_html=True)
                 
             # Perform Search
@@ -179,8 +342,10 @@ if search_clicked:
 
             if target:
                 # 2. Success Animation
-                if success_anim:
-                    st_lottie(success_anim, speed=1, loop=False, height=150)
+                col1, col2, col3 = st.columns([1, 2, 1])
+
+                with col2:
+                    st.image(success_image, width=180)
                 
                 # 3. Display Results
                 st.subheader("🎯 Selected Patient Details")
